@@ -7,26 +7,23 @@ const register = (body) => {
     const { email, username } = body;
     const getEmail = "SELECT email FROM users WHERE email = ?";
     db.query(getEmail, email, (err, resultGetEmail) => {
-      if (err) return reject({ msg: "getEmail Error", err });
-      if (resultGetEmail.length)
-        return reject({ msg: "Email has register", err });
+      if (err) return reject(err);
+      if (resultGetEmail.length) return reject("emailHandler");
       const getUsername = "SELECT username FROM users WHERE username = ?";
       db.query(getUsername, username, (err, resultGetUsername) => {
-        if (err) return reject({ msg: "getUsername Error", err });
-        if (resultGetUsername.length)
-          return reject({ msg: "Username has register", err });
+        if (err) return reject(err);
+        if (resultGetUsername.length) return reject("usernameHandler");
         bcrypt.genSalt(10, (err, resultSalt) => {
-          if (err) return reject({ msg: "Bcrypt error", err });
-          bcrypt.hash(body.password, resultSalt, (error, resultHash) => {
-            if (error) return reject({ msg: "Hash error", err });
+          if (err) return reject(err);
+          bcrypt.hash(body.password, resultSalt, (err, resultHash) => {
+            if (err) return reject(err);
             const userData = {
               ...body,
               password: resultHash,
             };
             const postQuery = "INSERT INTO users SET ?";
             db.query(postQuery, userData, (err) => {
-              if (err)
-                return reject({ msg: "postQuery error", err });
+              if (err) return reject(err);
               return resolve("User Registered");
             });
           });
@@ -42,13 +39,11 @@ const login = (body) => {
     const getQuery = `SELECT * FROM users WHERE email = ? OR username = ?`;
     db.query(getQuery, [userLogin, userLogin], (err, resultBody) => {
       // console.log(resultBody);
-      if (err) return reject({ msg: "getQuery Error", err });
-      if (!resultBody.length)
-        return reject({ msg: "Email or Username not match", err });
+      if (err) return reject(err);
+      if (!resultBody.length) return reject(401);
       bcrypt.compare(password, resultBody[0].password, (err, resultCompare) => {
-        if (err) return reject({ msg: "Compare Error", err });
-        if (!resultCompare)
-          return reject({ msg: "Password not match", err });
+        if (err) return reject(err);
+        if (!resultCompare) return reject(401);
         const userInfo = {
           userId: resultBody[0].id,
           authLevel: Number(resultBody[0].role_id),
@@ -71,10 +66,10 @@ const login = (body) => {
             issuer: "zwallet",
           },
           (err, token) => {
-            if (err) return reject({ msg: "jwt error", err });
+            if (err) return reject(err);
             const postToken = `INSERT INTO active_token (token) VALUES ("${token}")`;
             db.query(postToken, (err) => {
-              if (err) return reject({ msg: "postToken error", err });
+              if (err) return reject(err);
               return resolve({ token, userInfo: userInfo });
             });
           }
@@ -88,9 +83,9 @@ const logout = (req) => {
   return new Promise((resolve, reject) => {
     const { body } = req;
     const queryDelete = `DELETE FROM active_token WHERE token = "${body.token}"`;
-    db.query(queryDelete, (err) => {
-      if (err) return reject({ msg: "queryDelete Error", err });
-      return resolve("You have successfully logged out");
+    db.query(queryDelete, (err, result) => {
+      if (err) return reject(err);
+      return resolve(result);
     });
   });
 };

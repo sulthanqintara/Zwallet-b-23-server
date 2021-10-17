@@ -1,4 +1,3 @@
-const { query } = require("express");
 const responseHelper = require("../helpers/response");
 const authModel = require("../models/auth");
 
@@ -6,32 +5,53 @@ const register = (req, res) => {
   const { body } = req;
   authModel
     .register(body)
-    .then((result) => responseHelper.success(res, 201, result))
+    .then((result) =>
+      responseHelper.success(res, "Success Registered", 201, result)
+    )
     .catch((err) => {
-      if (err === 409) responseHelper.error(res, 409, "E-mail already registered");
-      else responseHelper.error(res, 500, err);
+      if (err === "emailHandler")
+        responseHelper.error(
+          res,
+          "E-mail already registered",
+          409,
+          "Indicates that the request could not be processed because of conflict in the current state of the resource"
+        );
+      if (err === "usernameHandler")
+        responseHelper.error(
+          res,
+          "Username already registered",
+          409,
+          "Indicates that the request could not be processed because of conflict in the current state of the resource"
+        );
+      else responseHelper.error(res, "SQL Error", 500, err);
     });
 };
 
-const login = (req, res, next) => {
+const login = (req, res) => {
   const { body } = req;
   authModel
     .login(body)
-    .then((result) => responseHelper.success(res, 200, result))
-    .catch((error) => {
-      if (error === 401)
-        responseHelper.error(res, 401, "Invalid Email or Password");
-      else responseHelper.error(res, 500, error);
+    .then((result) => responseHelper.success(res, "Success Login", 200, result))
+    .catch((err) => {
+      if (err === 401)
+        responseHelper.error(
+          res,
+          "Invalid Email or Password",
+          401,
+          "check your valid data"
+        );
+      else responseHelper.error(res, "SQL Error", 500, err);
     });
 };
 
 const logout = (req, res) => {
   authModel
     .logout(req)
-    .then((result) => responseHelper.success(res, 200, result))
-    .catch((err) => responseHelper.error(res, 500, err));
+    .then((result) =>
+      responseHelper.success(res, "Success Logout", 200, result)
+    )
+    .catch((err) => responseHelper.error(res, "SQL Error", 500, err));
 };
-
 
 module.exports = {
   login,
