@@ -1,23 +1,22 @@
-const success = (res, status, result, info) => {
-    const objectResponse = {
-      errorMsg: null,
-      result,
-      info,
-    };
-    res.status(status).json(objectResponse);
+const success = (res, message, status, result) => {
+  const objectResponse = {
+    message,
+    status,
+    result,
   };
-  
-  const error = (res, status, errorMsg) => {
-    const objectResponse = {
-      errorMsg,
-      status,
-      data: null,
-    };
-    res.status(status).json(objectResponse);
+  res.status(status).json(objectResponse);
+};
+
+const error = (res, message, status, infoError) => {
+  const objectResponse = {
+    message,
+    infoError,
+    status,
   };
-  
-  module.exports = {
-    success,
-    error,
-  };
-  
+  res.status(status).json(objectResponse);
+};
+
+module.exports = {
+  success,
+  error,
+};
