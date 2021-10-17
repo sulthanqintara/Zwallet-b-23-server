@@ -1,11 +1,13 @@
 // ROUTER FILE UTAMA
-const mainRouter = require("express").Router()
+const mainRouter = require("express").Router();
 
 // SUB-ROUTER
-const pingRouter = require("./ping")
-const authRouter = require("./auth")
+const pingRouter = require("./ping");
+const authRouter = require("./auth");
+const userRouter = require("./user");
 
-mainRouter.use("/", pingRouter)
-mainRouter.use("/auth", authRouter)
+mainRouter.use("/", pingRouter);
+mainRouter.use("/auth", authRouter);
+mainRouter.use("/users", userRouter);
 
-module.exports = mainRouter
+module.exports = mainRouter;

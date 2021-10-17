@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const responseHelper = require("../helpers/response");
-const db = require("../database/mysql");
+const db = require("../database/db");
 
 const checkToken = (req, res, next) => {
   const bearerToken = req.header("x-access-token");

@@ -4,9 +4,9 @@ const bcrypt = require("bcrypt");
 
 const register = (body) => {
   return new Promise((resolve, reject) => {
-    const { email } = body;
-    const getQuery = "SELECT * FROM users WHERE email = ?";
-    db.query(getQuery, email, (err, resultGetQuery) => {
+    const { userData } = body;
+    const getQuery = "SELECT * FROM users WHERE email = ? OR username = ?";
+    db.query(getQuery, userData, (err, resultGetQuery) => {
       if (err) return reject({ msg: "SQL Error", status: 500, err });
       if (resultGetQuery.length)
         return reject({ msg: "Not match", status: 401, err });
