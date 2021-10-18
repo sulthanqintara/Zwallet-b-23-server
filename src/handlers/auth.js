@@ -10,20 +10,20 @@ const register = (req, res) => {
     )
     .catch((err) => {
       if (err === "emailHandler")
-        responseHelper.error(
+        return responseHelper.error(
           res,
           "E-mail already registered",
           409,
           "Indicates that the request could not be processed because of conflict in the current state of the resource"
         );
       if (err === "usernameHandler")
-        responseHelper.error(
+        return responseHelper.error(
           res,
           "Username already registered",
           409,
           "Indicates that the request could not be processed because of conflict in the current state of the resource"
         );
-      else responseHelper.error(res, "SQL Error", 500, err);
+      else return responseHelper.error(res, "SQL Error", 500, err);
     });
 };
 
