@@ -11,21 +11,29 @@ const checkToken = (req, res, next) => {
     if (err) {
       const queryDelete = `DELETE FROM active_token WHERE token = "${token}"`;
       db.query(queryDelete, (err) => {
-        if (err) return new Error(responseHelper.error(res, 500, err));
+        if (err)
+          return new Error(responseHelper.error(res, "SQL Error", 500, err));
         else
           return responseHelper.error(
             res,
+            "Forbidden",
             403,
-            "Token Expired, Silahkan Login Kembali"
+            "Token Expired, Please Sign In Again"
           );
       });
     } else {
       const query = `SELECT token FROM active_token WHERE token = "${token}"`;
       db.query(query, (err, result) => {
-        if (err) return new Error(responseHelper.error(res, 500, err));
+        if (err)
+          return new Error(responseHelper.error(res, "SQL Error", 500, err));
         if (!result.length)
           return new Error(
-            responseHelper.error(res, 401, "Silahkan Login Kembali")
+            responseHelper.error(
+              res,
+              "Unauthorized",
+              401,
+              "Please Sign In Again"
+            )
           );
         req.token = token;
         next();
@@ -37,7 +45,8 @@ const checkToken = (req, res, next) => {
 const authAdmin = (req, res, next) => {
   const token = req.token;
   jwt.verify(token, process.env.SECRET_KEY, (err, payload) => {
-    if (err) return new Error(responseHelper.error(res, 401, err));
+    if (err)
+      return new Error(responseHelper.error(res, "Unauthorized ", 401, err));
     req.payload = payload;
     if (payload.statusLevel !== 1)
       return new Error(responseHelper.error(res, 403, "Anda tidak diizinkan!"));
@@ -48,11 +57,14 @@ const authAdmin = (req, res, next) => {
 const authSeller = (req, res, next) => {
   const token = req.token;
   jwt.verify(token, process.env.SECRET_KEY, (err, payload) => {
-    if (err) return new Error(responseHelper.error(res, 401, err));
+    if (err)
+      return new Error(responseHelper.error(res, "Unauthorized ", 401, err));
     req.payload = payload;
     if (payload.statusLevel !== 1)
       if (payload.statusLevel !== 2)
-        return new Error(responseHelper.error(res, 403, "Anda tidak diizinkan!"));
+        return new Error(
+          responseHelper.error(res, "Forbidden", 403, "You are not allowed!")
+        );
     next();
   });
 };
@@ -60,11 +72,14 @@ const authSeller = (req, res, next) => {
 const authUser = (req, res, next) => {
   const token = req.token;
   jwt.verify(token, process.env.SECRET_KEY, (err, payload) => {
-    if (err) return new Error(responseHelper.error(res, 401, err));
+    if (err)
+      return new Error(responseHelper.error(res, "Unauthorized ", 401, err));
     req.payload = payload;
     if (payload.statusLevel !== 1)
       if (payload.statusLevel !== 3)
-        return new Error(responseHelper.error(res, 403, "Anda tidak diizinkan!"));
+        return new Error(
+          responseHelper.error(res, "Forbidden", 403, "You are not allowed!")
+        );
     next();
   });
 };
