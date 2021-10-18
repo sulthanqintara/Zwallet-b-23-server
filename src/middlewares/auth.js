@@ -5,14 +5,13 @@ const db = require("../database/db");
 const checkToken = (req, res, next) => {
   const bearerToken = req.header("x-access-token");
   if (!bearerToken)
-    return new Error(responseHelper.error(res, 401, "Anda belum login!"));
+    return responseHelper.error(res, "Unauthorized", 401, "Anda belum login!");
   const token = bearerToken.split(" ")[1];
   jwt.verify(token, process.env.SECRET_KEY, (err) => {
     if (err) {
       const queryDelete = `DELETE FROM active_token WHERE token = "${token}"`;
       db.query(queryDelete, (err) => {
-        if (err)
-          return new Error(responseHelper.error(res, "SQL Error", 500, err));
+        if (err) return responseHelper.error(res, "SQL Error", 500, err);
         else
           return responseHelper.error(
             res,
@@ -24,16 +23,13 @@ const checkToken = (req, res, next) => {
     } else {
       const query = `SELECT token FROM active_token WHERE token = "${token}"`;
       db.query(query, (err, result) => {
-        if (err)
-          return new Error(responseHelper.error(res, "SQL Error", 500, err));
+        if (err) return responseHelper.error(res, "SQL Error", 500, err);
         if (!result.length)
-          return new Error(
-            responseHelper.error(
-              res,
-              "Unauthorized",
-              401,
-              "Please Sign In Again"
-            )
+          return responseHelper.error(
+            res,
+            "Unauthorized",
+            401,
+            "Please Sign In Again"
           );
         req.token = token;
         next();
@@ -45,11 +41,10 @@ const checkToken = (req, res, next) => {
 const authAdmin = (req, res, next) => {
   const token = req.token;
   jwt.verify(token, process.env.SECRET_KEY, (err, payload) => {
-    if (err)
-      return new Error(responseHelper.error(res, "Unauthorized ", 401, err));
+    if (err) return responseHelper.error(res, "Unauthorized ", 401, err);
     req.payload = payload;
     if (payload.statusLevel !== 1)
-      return new Error(responseHelper.error(res, 403, "Anda tidak diizinkan!"));
+      return responseHelper.error(res, 403, "Anda tidak diizinkan!");
     next();
   });
 };
@@ -57,13 +52,15 @@ const authAdmin = (req, res, next) => {
 const authSeller = (req, res, next) => {
   const token = req.token;
   jwt.verify(token, process.env.SECRET_KEY, (err, payload) => {
-    if (err)
-      return new Error(responseHelper.error(res, "Unauthorized ", 401, err));
+    if (err) return responseHelper.error(res, "Unauthorized ", 401, err);
     req.payload = payload;
     if (payload.statusLevel !== 1)
       if (payload.statusLevel !== 2)
-        return new Error(
-          responseHelper.error(res, "Forbidden", 403, "You are not allowed!")
+        return responseHelper.error(
+          res,
+          "Forbidden",
+          403,
+          "You are not allowed!"
         );
     next();
   });
@@ -72,13 +69,15 @@ const authSeller = (req, res, next) => {
 const authUser = (req, res, next) => {
   const token = req.token;
   jwt.verify(token, process.env.SECRET_KEY, (err, payload) => {
-    if (err)
-      return new Error(responseHelper.error(res, "Unauthorized ", 401, err));
+    if (err) return responseHelper.error(res, "Unauthorized ", 401, err);
     req.payload = payload;
     if (payload.statusLevel !== 1)
       if (payload.statusLevel !== 3)
-        return new Error(
-          responseHelper.error(res, "Forbidden", 403, "You are not allowed!")
+        return responseHelper.error(
+          res,
+          "Forbidden",
+          403,
+          "You are not allowed!"
         );
     next();
   });

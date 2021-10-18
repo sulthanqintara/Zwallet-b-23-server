@@ -21,6 +21,25 @@ const editUser = (req, res) => {
     .catch((err) => responseHelper.error(res, "Error SQL", 500, err));
 };
 
+const updatePIN = (req, res) => {
+  const { body, params } = req;
+  userModel
+    .updatePIN(body, params.id)
+    .then((result) =>
+      responseHelper.success(res, "Update PIN success", 200, result)
+    )
+    .catch((err) => {
+      if (err === 404)
+        responseHelper.error(
+          res,
+          "Not Found!",
+          404,
+          "Old PIN Wrong"
+        );
+      else responseHelper.error(res, "Error SQL", 500, err);
+    });
+};
+
 const updatePassword = (req, res) => {
   const { body, params } = req;
   userModel
@@ -29,8 +48,13 @@ const updatePassword = (req, res) => {
       responseHelper.success(res, "Update password success", 200, result)
     )
     .catch((err) => {
-      if (err === 401)
-        responseHelper.error(res, "Old Password Wrong", 401, err);
+      if (err === 404)
+        responseHelper.error(
+          res,
+          "Not Found!",
+          404,
+          "Old Password Wrong"
+        );
       else responseHelper.error(res, "Error SQL", 500, err);
     });
 };
@@ -54,13 +78,14 @@ const getUser = (req, res) => {
       }
     )
     .catch((err) => {
-      if (err === 404) responseHelper.error(res, "Data Not Found!", 404, err);
+      if (err === 404) responseHelper.error(res, "Not Found!", 404, "Please Input Valid Data");
       else responseHelper.error(res, "Error SQL", 500, err);
     });
 };
 
 module.exports = {
   getUserById,
+  updatePIN,
   updatePassword,
   editUser,
   getUser,
