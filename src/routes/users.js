@@ -7,6 +7,11 @@ const uploadMiddleware = require("../middlewares/upload");
 userRouter.get("/", userHandler.getUser);
 userRouter.get("/:id", authMiddleware.checkToken, userHandler.getUserById);
 userRouter.patch(
+  "/update-pin/:id",
+  authMiddleware.checkToken,
+  userHandler.updatePIN
+);
+userRouter.patch(
   "/update-password/:id",
   authMiddleware.checkToken,
   userHandler.updatePassword

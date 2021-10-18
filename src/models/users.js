@@ -5,7 +5,6 @@ const getUserById = (id) => {
   return new Promise((resolve, reject) => {
     const queryGet = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE id = ? `;
     db.query(queryGet, id, (err, result) => {
-      //   console.log(result);
       if (err) return reject(err);
       return resolve(result);
     });
@@ -56,6 +55,31 @@ const editUser = (file, id, body) => {
   });
 };
 
+const updatePIN = (body, id) => {
+  return new Promise((resolve, reject) => {
+    const { oldPinNumber, newPinNumber } = body;
+    const getPassQuery = "SELECT pin_number FROM users WHERE id = ?";
+    db.query(getPassQuery, id, (err, res) => {
+      if (err) return reject(err);
+      bcrypt.compare(oldPinNumber, res[0].pin_number, (err, result) => {
+        if (err) return reject(err);
+        if (!result) return reject(404);
+        bcrypt.hash(newPinNumber, 10, (err, hash) => {
+          if (err) return reject(err);
+          const data = {
+            pin_number: hash,
+          };
+          const updateQuery = "UPDATE users SET ? WHERE id = ?";
+          db.query(updateQuery, [data, id], (err, result) => {
+            if (err) return reject(err);
+            return resolve(result);
+          });
+        });
+      });
+    });
+  });
+};
+
 const updatePassword = (body, id) => {
   return new Promise((resolve, reject) => {
     const { oldPass, newPass } = body;
@@ -63,19 +87,15 @@ const updatePassword = (body, id) => {
     db.query(getPassQuery, id, (err, res) => {
       if (err) return reject(err);
       bcrypt.compare(oldPass, res[0].password, (err, result) => {
-        //   console.log('oldPass', result)
         if (err) return reject(err);
-        if (!result) return reject(401);
+        if (!result) return reject(404);
         bcrypt.hash(newPass, 10, (err, hash) => {
-          // console.log('newPass', hash)
           if (err) return reject(err);
           const newPassword = {
             password: hash,
           };
-          // console.log(newPassword)
           const updateQuery = "UPDATE users SET ? WHERE id = ?";
           db.query(updateQuery, [newPassword, id], (err, result) => {
-            // console.log(newPassword)
             if (err) return reject(err);
             return resolve(result);
           });
@@ -126,6 +146,7 @@ const getUser = (query) => {
 module.exports = {
   getUserById,
   editUser,
+  updatePIN,
   updatePassword,
   getUser,
 };

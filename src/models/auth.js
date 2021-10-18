@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 
 const register = (body) => {
   return new Promise((resolve, reject) => {
-    const { email, username } = body;
+    const { email, username, password, pin_number } = body;
     const getEmail = "SELECT email FROM users WHERE email = ?";
     db.query(getEmail, email, (err, resultGetEmail) => {
       if (err) return reject(err);
@@ -14,17 +14,24 @@ const register = (body) => {
         if (err) return reject(err);
         if (resultGetUsername.length) return reject("usernameHandler");
         bcrypt.genSalt(10, (err, resultSalt) => {
+          // console.log("salt", resultSalt);
           if (err) return reject(err);
-          bcrypt.hash(body.password, resultSalt, (err, resultHash) => {
+          bcrypt.hash(password, resultSalt, (err, resultHashPassword) => {
+            // console.log("pw", resultHashPassword);
             if (err) return reject(err);
-            const userData = {
-              ...body,
-              password: resultHash,
-            };
-            const postQuery = "INSERT INTO users SET ?";
-            db.query(postQuery, userData, (err) => {
+            bcrypt.hash(pin_number, resultSalt, (err, resultHashPin) => {
+              // console.log("pin", resultHashPin);
               if (err) return reject(err);
-              return resolve("User Registered");
+              const userData = {
+                ...body,
+                password: resultHashPassword,
+                pin_number: resultHashPin
+              };
+              const postQuery = "INSERT INTO users SET ?";
+              db.query(postQuery, userData, (err) => {
+                if (err) return reject(err);
+                return resolve("User Registered");
+              });
             });
           });
         });
