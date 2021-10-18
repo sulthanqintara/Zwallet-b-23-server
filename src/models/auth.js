@@ -25,7 +25,7 @@ const register = (body) => {
               const userData = {
                 ...body,
                 password: resultHashPassword,
-                pin_number: resultHashPin
+                pin_number: resultHashPin,
               };
               const postQuery = "INSERT INTO users SET ?";
               db.query(postQuery, userData, (err) => {
@@ -58,6 +58,7 @@ const login = (body) => {
           firstName: resultBody[0].first_name,
           lastName: resultBody[0].last_name,
           userPhone: resultBody[0].phone,
+          profilePic: resultBody[0].picture,
         };
         const payload = {
           firstName: resultBody[0].first_name,
