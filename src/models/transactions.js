@@ -7,6 +7,8 @@ const addNewTransaction = (body) => {
     const senderId = body?.sender_id && Number(body.sender_id);
     const recepientId = body?.recipient_id && Number(body.recipient_id);
     const queryString = `INSERT INTO transactions SET ?`;
+    const transactionType =
+      body?.transaction_status_id && Number(body.transaction_status_id);
     db.query(queryString, body, (err, result) => {
       if (err) return reject(err);
       const queryGetBalance = `SELECT balance, id FROM users WHERE id = ? OR id = ?`;
@@ -34,7 +36,6 @@ const addNewTransaction = (body) => {
           }
           balanceSender = balanceSender - amount;
           balanceRecipient = balanceRecipient + amount;
-          console.log("sender:", balanceSender, "recipient:", balanceRecipient);
           const queryBalance = `UPDATE users SET balance = ? WHERE id = ?`;
           db.query(
             queryBalance,
@@ -42,7 +43,24 @@ const addNewTransaction = (body) => {
             (err, addBalanceResult) => {
               if (err) return reject(err);
               db.query(queryBalance, [balanceSender, senderId], (err, res) => {
-                return resolve("Transaction Created");
+                if (err) return reject(err);
+                const userIdResponse =
+                  transactionType === 1 ? recepientId : senderId;
+                const getQuery = `SELECT * FROM users WHERE id = ?`;
+                db.query(getQuery, userIdResponse, (err, userInfo) => {
+                  if (err) return reject(err);
+                  const data = {
+                    userId: userInfo[0].id,
+                    authLevel: Number(userInfo[0].role_id),
+                    username: userInfo[0].username,
+                    firstName: userInfo[0].first_name,
+                    lastName: userInfo[0].last_name,
+                    userPhone: userInfo[0].phone,
+                    profilePic: userInfo[0].picture,
+                    balance: userInfo[0].balance,
+                  };
+                  return resolve(data);
+                });
               });
             }
           );
