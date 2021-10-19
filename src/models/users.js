@@ -3,7 +3,7 @@ const db = require("../database/db");
 
 const getUserById = (id) => {
   return new Promise((resolve, reject) => {
-    const queryGet = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel, balance AS userBalance FROM users WHERE id = ? `;
+    const queryGet = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel, balance AS userBalance, picture AS userImage FROM users WHERE id = ? `;
     db.query(queryGet, id, (err, result) => {
       if (err) return reject(err);
       return resolve(result);
