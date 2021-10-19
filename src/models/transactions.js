@@ -3,10 +3,51 @@ const db = require("../database/db");
 
 const addNewTransaction = (body) => {
   return new Promise((resolve, reject) => {
+    const amount = body?.amount ? Number(body.amount) : 0;
+    const senderId = body?.sender_id && Number(body.sender_id);
+    const recepientId = body?.recipient_id && Number(body.recipient_id);
     const queryString = `INSERT INTO transactions SET ?`;
     db.query(queryString, body, (err, result) => {
       if (err) return reject(err);
-      return resolve("Transaction Created");
+      const queryGetBalance = `SELECT balance, id FROM users WHERE id = ? OR id = ?`;
+      db.query(
+        queryGetBalance,
+        [senderId, recepientId],
+        (err, balanceResult) => {
+          if (err) return reject(err);
+          let balanceSender = 0;
+          let balanceRecipient = 0;
+          if (balanceResult[0].id === senderId) {
+            balanceSender = balanceResult[0].balance
+              ? balanceResult[0].balance
+              : 0;
+            balanceRecipient = balanceResult[1].balance
+              ? balanceResult[1].balance
+              : 0;
+          } else {
+            balanceSender = balanceResult[1].balance
+              ? balanceResult[1].balance
+              : 0;
+            balanceRecipient = balanceResult[0].balance
+              ? balanceResult[0].balance
+              : 0;
+          }
+          balanceSender = balanceSender - amount;
+          balanceRecipient = balanceRecipient + amount;
+          console.log("sender:", balanceSender, "recipient:", balanceRecipient);
+          const queryBalance = `UPDATE users SET balance = ? WHERE id = ?`;
+          db.query(
+            queryBalance,
+            [balanceRecipient, recepientId],
+            (err, addBalanceResult) => {
+              if (err) return reject(err);
+              db.query(queryBalance, [balanceSender, senderId], (err, res) => {
+                return resolve("Transaction Created");
+              });
+            }
+          );
+        }
+      );
     });
   });
 };

@@ -59,6 +59,7 @@ const login = (body) => {
           lastName: resultBody[0].last_name,
           userPhone: resultBody[0].phone,
           profilePic: resultBody[0].picture,
+          balance: resultBody[0].balance,
         };
         const payload = {
           firstName: resultBody[0].first_name,
