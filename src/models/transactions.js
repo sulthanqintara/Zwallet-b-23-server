@@ -55,24 +55,57 @@ const addNewTransaction = (body) => {
 const getAllTransactionsByUser = (query) => {
   return new Promise((resolve, reject) => {
     let user_id = query?.user_id && query.user_id;
-    let order_by = query?.order_by ? query.order_by : "timestamp";
-    const duration = query?.duration ? query.duration : "0000-00-00";
+    let order_by = query?.order_by ? query.order_by : "t.timestamp";
+    const dateNow = new Date();
+    const startDuration = query?.start_duration
+      ? query.start_duration
+      : "0000-00-00";
+    const finishDuration = query?.finish_duration
+      ? query.finish_duration
+      : `${dateNow.getFullYear()}-${dateNow.getMonth() + 1}-${
+          dateNow.getDate() + 1
+        }`;
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 4;
     const offset = limit * (page - 1);
     let sort = query?.sort ? query?.sort : "DESC";
-    const queryString = `SELECT t.id, t.sender_id, u.username AS sender, t.recipient_id, u2.username AS recepient, t.amount, t.timestamp, t.status, t.transaction_status_id, u.picture AS sender_picture, u2.picture AS recepient_picture FROM transactions t JOIN users u ON t.sender_id = u.id join users u2 ON t.recipient_id = u2.id WHERE t.timestamp >= ? AND (t.sender_id = ? OR t.recipient_id = ?) ORDER BY ? ? LIMIT ? OFFSET ?`;
+    let filter = query?.filter ? query?.filter : "";
+    let queryString = `SELECT t.id, t.sender_id, u.username AS sender, t.recipient_id, u2.username AS recepient, t.amount, t.timestamp, t.status, t.transaction_status_id, u.picture AS sender_picture, u2.picture AS recepient_picture FROM transactions t JOIN users u ON t.sender_id = u.id join users u2 ON t.recipient_id = u2.id WHERE t.timestamp >= '${startDuration}' AND t.timestamp <= '${finishDuration}' `;
+    const paramQuery = `AND (t.sender_id = ${user_id} OR t.recipient_id = ${user_id}) ORDER BY ${order_by} ${sort} LIMIT ${limit} OFFSET ${offset}`;
+    const paramExpenseQuery = `AND t.sender_id = ${user_id} ORDER BY ${order_by} ${sort} LIMIT ${limit} OFFSET ${offset}`;
+    const paramIncomeQuery = `AND t.recipient_id = ${user_id} ORDER BY ${order_by} ${sort} LIMIT ${limit} OFFSET ${offset}`;
+
+    if (!filter) {
+      queryString = queryString + paramQuery;
+    }
+    if (filter === "expense") {
+      queryString = queryString + paramExpenseQuery;
+    }
+    if (filter === "income") {
+      queryString = queryString + paramIncomeQuery;
+    }
     db.query(
       queryString,
-      [duration, user_id, user_id, order_by, sort, limit, offset],
+      [startDuration, finishDuration, user_id, user_id, limit, offset],
       (err, result) => {
         if (err) return reject(err);
         if (result.length < 1) return reject(404);
-        const queryCount =
-          'SELECT COUNT(id) AS "total_transaction" FROM transactions WHERE timestamp >= ? AND (sender_id = ? OR recipient_id = ?)';
+        let queryCount = `SELECT COUNT(id) AS "total_transaction" FROM transactions WHERE timestamp >= '${startDuration}' AND timestamp <= '${finishDuration}' `;
+        const countParams = `AND (sender_id = ${user_id} OR recipient_id = ${user_id})`;
+        const countExpense = `AND sender_id = ${user_id}`;
+        const countIncome = `AND recipient_id = ${user_id}`;
+        if (!filter) {
+          queryCount = queryCount + countParams;
+        }
+        if (filter === "expense") {
+          queryCount = queryCount + countExpense;
+        }
+        if (filter === "income") {
+          queryCount = queryCount + countIncome;
+        }
         db.query(
           queryCount,
-          [duration, user_id, user_id],
+          [startDuration, user_id, user_id],
           (err, totalCount) => {
             if (err) return reject(err);
             const totalData = totalCount[0].total_transaction;
