@@ -30,12 +30,7 @@ const updatePIN = (req, res) => {
     )
     .catch((err) => {
       if (err === 404)
-        responseHelper.error(
-          res,
-          "Not Found!",
-          404,
-          "Old PIN Wrong"
-        );
+        responseHelper.error(res, "Not Found!", 404, "Old PIN Wrong");
       else responseHelper.error(res, "Error SQL", 500, err);
     });
 };
@@ -49,13 +44,51 @@ const updatePassword = (req, res) => {
     )
     .catch((err) => {
       if (err === 404)
-        responseHelper.error(
+        responseHelper.error(res, "Not Found!", 404, "Old Password Wrong");
+      else responseHelper.error(res, "Error SQL", 500, err);
+    });
+};
+
+const forgotPassword = (req, res) => {
+  const { body } = req;
+  userModel
+    .forgotPassword(body)
+    .then((result) => responseHelper.success(res, "Success", 201, result))
+    .catch((err) => {
+      if (err === 404) {
+        return responseHelper.error(
           res,
           "Not Found!",
           404,
-          "Old Password Wrong"
+          "E-mail not registered"
         );
-      else responseHelper.error(res, "Error SQL", 500, err);
+      }
+      return responseHelper.error(res, "Error SQL", 500, err);
+    });
+};
+
+const checkForgotPassword = (req, res) => {
+  const { body } = req;
+  userModel
+    .checkForgotCode(body)
+    .then((result) => responseHelper.success(res, "Success", 200, result))
+    .catch((err) => {
+      if (err === 404) {
+        return responseHelper.error(res, 404, "Code is invalid");
+      }
+      return responseHelper.error(res, "Error SQL", 500, err);
+    });
+};
+
+const changePassword = (req, res) => {
+  const { body } = req;
+  userModel
+    .changePassword(body)
+    .then((result) =>
+      responseHelper.success(res, "Password Has Been Changed!", 200, result)
+    )
+    .catch((err) => {
+      responseHelper.error(res, "Error SQL", 500, err);
     });
 };
 
@@ -78,15 +111,19 @@ const getUser = (req, res) => {
       }
     )
     .catch((err) => {
-      if (err === 404) responseHelper.error(res, "Not Found!", 404, "Please Input Valid Data");
+      if (err === 404)
+        responseHelper.error(res, "Not Found!", 404, "Please Input Valid Data");
       else responseHelper.error(res, "Error SQL", 500, err);
     });
 };
 
 module.exports = {
   getUserById,
+  editUser,
   updatePIN,
   updatePassword,
-  editUser,
+  forgotPassword,
+  checkForgotPassword,
+  changePassword,
   getUser,
 };
