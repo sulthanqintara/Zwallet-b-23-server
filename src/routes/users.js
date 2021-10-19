@@ -22,5 +22,8 @@ userRouter.patch(
   uploadMiddleware.upload.single("image"),
   userHandler.editUser
 );
+userRouter.post("/forgot_password", userHandler.forgotPassword);
+userRouter.post("/forgot_password/check-code", userHandler.checkForgotPassword);
+userRouter.patch("/forgot_password/change-password", userHandler.changePassword);
 
 module.exports = userRouter;

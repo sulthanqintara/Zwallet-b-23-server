@@ -105,21 +105,89 @@ const updatePassword = (body, id) => {
   });
 };
 
+const forgotPassword = (body) => {
+  return new Promise((resolve, reject) => {
+    const { email } = body;
+    const getEmailQuery = "SELECT id FROM users WHERE email = ?";
+    db.query(getEmailQuery, email, (err, result) => {
+      if (err) return reject(err);
+      if (!result.length) return reject(404);
+      const min = Math.ceil(111111);
+      const max = Math.floor(999999);
+      const code = Math.floor(Math.random() * (max - min) + min);
+      const postCodeQuery =
+        "INSERT INTO forgot_password (user_id, code) VALUES (? ,?)";
+      db.query(postCodeQuery, [result[0].id, code], (err, res) => {
+        if (err) return reject(err);
+        return resolve("Code sent to database");
+      });
+    });
+  });
+};
+
+const checkForgotCode = (body) => {
+  return new Promise((resolve, reject) => {
+    const { code, email } = body;
+    const getEmailQuery = "SELECT id FROM users WHERE email = ?";
+    db.query(getEmailQuery, email, (err, result) => {
+      if (err) return reject(err);
+      const id = result[0].id;
+      const checkCodeQuery =
+        "SELECT code FROM forgot_password WHERE id = (SELECT max(id) FROM forgot_password) AND user_id = ? AND code = ?";
+      db.query(checkCodeQuery, [id, code], (err, res) => {
+        if (err) return reject(err);
+        if (!res.length) return reject(404);
+        return resolve("Code is valid");
+      });
+    });
+  });
+};
+
+const changePassword = (body) => {
+  return new Promise((resolve, reject) => {
+    const { code, email, password } = body;
+    const getEmailQuery = "SELECT id FROM users WHERE email = ?";
+    db.query(getEmailQuery, email, (err, result) => {
+      if (err) return reject(err);
+      const id = result[0].id;
+      const checkCodeQuery =
+        "SELECT code FROM forgot_password WHERE id = (SELECT max(id) FROM forgot_password) AND user_id = ? AND code = ?";
+      db.query(checkCodeQuery, [id, code], (err, res) => {
+        if (err) return reject(err);
+        if (!res.length) return reject(404);
+        const updatePassQuery = "UPDATE users SET ? WHERE email = ?";
+        bcrypt.hash(password, 10, (err, hash) => {
+          if (err) return reject(err);
+          const newPassword = {
+            password: hash,
+          };
+          db.query(updatePassQuery, [newPassword, email], (err, result) => {
+            if (err) return reject(err);
+            return resolve("Password sudah diganti");
+          });
+        });
+      });
+    });
+  });
+};
+
 const getUser = (query) => {
   return new Promise((resolve, reject) => {
+    const id = query?.id ? query.id : 0;
     const keyword = query?.keyword ? query.keyword : "";
+    const orderBy = query.order_by ? query.order_by : "username";
     const sort = query.sort ? query.sort : "ASC";
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 5;
     const offset = limit * (page - 1);
-    const queryString = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%" ORDER BY username ${sort}, phone ${sort} LIMIT ${limit} OFFSET ${offset}`;
+    const queryString = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE NOT id = ${id} AND (username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%") ORDER BY ${orderBy} ${sort}, phone ${sort} LIMIT ${limit} OFFSET ${offset}`;
     db.query(queryString, (err, result) => {
       if (err) return reject(err);
       if (!result.length) return reject(404);
-      const queryCountTotal = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%" ORDER BY username ${sort}, phone ${sort}`;
+      const queryCountTotal = `SELECT COUNT(id) AS totalUser, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE NOT id = ${id} AND (username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%") ORDER BY ${orderBy} ${sort}, phone ${sort}`;
       db.query(queryCountTotal, (err, totalResult) => {
         if (err) return reject(err);
-        const totalData = totalResult[0].total;
+        const totalData = totalResult[0].totalUser;
         const totalPage = Math.ceil(totalData / limit);
         const baseURL = `/users?limit=${limit}&`;
         let urlPrevPage = baseURL;
@@ -127,6 +195,12 @@ const getUser = (query) => {
         query.keyword &&
           ((urlPrevPage = urlPrevPage + `keyword=${keyword}&`),
           (urlNextPage = urlNextPage + `keyword=${keyword}&`));
+        query.order_by &&
+          ((urlPrevPage = urlPrevPage + `order_by=${orderBy}&`),
+          (urlNextPage = urlNextPage + `order_by=${orderBy}&`));
+        query.sort &&
+          ((urlPrevPage = urlPrevPage + `sort=${sort}&`),
+          (urlNextPage = urlNextPage + `sort=${sort}&`));
         const prevPage = page > 1 ? urlPrevPage + `page=${page - 1}` : null;
         const nextPage =
           page < totalPage ? urlNextPage + `page=${page + 1}` : null;
@@ -148,5 +222,8 @@ module.exports = {
   editUser,
   updatePIN,
   updatePassword,
+  forgotPassword,
+  checkForgotCode,
+  changePassword,
   getUser,
 };
