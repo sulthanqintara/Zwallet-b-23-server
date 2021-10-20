@@ -4,6 +4,7 @@ const logger = require("morgan");
 const mainRouter = require("./src/routes/index");
 const cors = require("cors");
 const app = express();
+// const nodemailer = require("nodemailer");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const httpServer = createServer(app);
