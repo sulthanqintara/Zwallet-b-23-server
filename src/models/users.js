@@ -218,6 +218,24 @@ const getUser = (query) => {
   });
 };
 
+const verifyPin = (body) => {
+  return new Promise((resolve, reject) => {
+    const userId = body?.user_id ? Number(body.user_id) : null;
+    const pin = body?.pin ? body.pin : "0";
+    console.log(userId, pin);
+    const queryGetPin = `SELECT pin_number FROM users WHERE id = ?`;
+    db.query(queryGetPin, userId, (err, res) => {
+      if (err) return reject(err);
+      bcrypt.compare(pin, res[0].pin_number, (err, compareResult) => {
+        if (err) return reject(err);
+        if (!compareResult) return reject(404);
+        console.log("result", compareResult);
+        return resolve("success");
+      });
+    });
+  });
+};
+
 module.exports = {
   getUserById,
   editUser,
@@ -227,4 +245,5 @@ module.exports = {
   checkForgotCode,
   changePassword,
   getUser,
+  verifyPin,
 };

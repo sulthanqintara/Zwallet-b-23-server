@@ -117,6 +117,19 @@ const getUser = (req, res) => {
     });
 };
 
+const verifyPin = (req, res) => {
+  const { body } = req;
+  userModel
+    .verifyPin(body)
+    .then((result) => responseHelper.success(res, "Pin Verified", 200))
+    .catch((err) => {
+      if (err === 404) {
+        return responseHelper.error(res, "Pin Invalid!", 404);
+      }
+      return responseHelper.error(res, "Error SQL", 500, err);
+    });
+};
+
 module.exports = {
   getUserById,
   editUser,
@@ -126,4 +139,5 @@ module.exports = {
   checkForgotPassword,
   changePassword,
   getUser,
+  verifyPin,
 };
