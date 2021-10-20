@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const db = require("../database/db");
+const nodemailer = require("nodemailer");
 
 const getUserById = (id) => {
   return new Promise((resolve, reject) => {
@@ -110,7 +111,7 @@ const forgotPassword = (body) => {
     const { email } = body;
     const getEmailQuery = "SELECT email FROM users WHERE email = ?";
     db.query(getEmailQuery, email, (err, result) => {
-      console.log(result)
+      console.log(result);
       if (err) return reject(err);
       if (!result.length) return reject(404);
       const min = Math.ceil(111111);
@@ -118,9 +119,26 @@ const forgotPassword = (body) => {
       const code = Math.floor(Math.random() * (max - min) + min);
       const postCodeQuery =
         "INSERT INTO forgot_password (email, code) VALUES (? , ?)";
-      db.query(postCodeQuery, [result[0].email, code], (err, res) => {
+      db.query(postCodeQuery, [result[0].email, code], (err) => {
         if (err) return reject(err);
-        return resolve("Code sent to database");
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL_SENDER,
+            pass: process.env.PASSWORD_SENDER,
+          },
+        });
+        const mailOptions = {
+          from: process.env.EMAIL_SENDER,
+          to: email,
+          subject: "Test Email Subject",
+          text: `this code for reset your password ${code}`,
+        };
+        // send email
+        transporter.sendMail(mailOptions, (err) => {
+          if (err) return reject("node mailer error");
+          return resolve("code sent to database and email");
+        });
       });
     });
   });
