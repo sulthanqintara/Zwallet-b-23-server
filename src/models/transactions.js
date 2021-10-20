@@ -1,5 +1,6 @@
 const { query } = require("express");
 const db = require("../database/db");
+const socket = require("../../index");
 
 const addNewTransaction = (body) => {
   return new Promise((resolve, reject) => {
@@ -59,6 +60,14 @@ const addNewTransaction = (body) => {
                     profilePic: userInfo[0].picture,
                     balance: userInfo[0].balance,
                   };
+                  console.log(recepientId);
+                  socket.ioObject.emit(`transaction_${recepientId}`, {
+                    title: "Incoming Transaction",
+                    message:
+                      "You got incoming transaction For Rp" +
+                      amount +
+                      ". Let's check your history!",
+                  });
                   return resolve(data);
                 });
               });
