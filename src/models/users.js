@@ -39,14 +39,15 @@ const editUser = (file, id, body) => {
           const userInfo = [
             {
               userId: userData[0].id,
-              userUsername: userData[0].username,
+              username: userData[0].username,
               userImage: userData[0].picture,
               userEmail: userData[0].email,
-              userFirstName: userData[0].first_name,
-              userLastName: userData[0].last_name,
+              firstName: userData[0].first_name,
+              lastName: userData[0].last_name,
+              profilePic: userData[0].picture,
               userPhone: userData[0].phone,
               userPIN: userData[0].pin_number,
-              userAuthLevel: userData[0].role_id,
+              authLevel: userData[0].role_id,
             },
           ];
           return resolve(userInfo);
@@ -131,7 +132,7 @@ const forgotPassword = (body) => {
         const mailOptions = {
           from: process.env.EMAIL_SENDER,
           to: email,
-          subject: "Test Email Subject",
+          subject: "Code Reset Password",
           text: `this code for reset your password ${code}`,
         };
         // send email

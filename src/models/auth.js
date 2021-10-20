@@ -58,6 +58,7 @@ const login = (body) => {
           firstName: resultBody[0].first_name,
           lastName: resultBody[0].last_name,
           userPhone: resultBody[0].phone,
+          userEmail: resultBody[0].email,
           profilePic: resultBody[0].picture,
           balance: resultBody[0].balance,
         };
