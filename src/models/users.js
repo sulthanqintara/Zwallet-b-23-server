@@ -108,16 +108,17 @@ const updatePassword = (body, id) => {
 const forgotPassword = (body) => {
   return new Promise((resolve, reject) => {
     const { email } = body;
-    const getEmailQuery = "SELECT id FROM users WHERE email = ?";
+    const getEmailQuery = "SELECT email FROM users WHERE email = ?";
     db.query(getEmailQuery, email, (err, result) => {
+      console.log(result)
       if (err) return reject(err);
       if (!result.length) return reject(404);
       const min = Math.ceil(111111);
       const max = Math.floor(999999);
       const code = Math.floor(Math.random() * (max - min) + min);
       const postCodeQuery =
-        "INSERT INTO forgot_password (user_id, code) VALUES (? ,?)";
-      db.query(postCodeQuery, [result[0].id, code], (err, res) => {
+        "INSERT INTO forgot_password (email, code) VALUES (? , ?)";
+      db.query(postCodeQuery, [result[0].email, code], (err, res) => {
         if (err) return reject(err);
         return resolve("Code sent to database");
       });
@@ -128,13 +129,13 @@ const forgotPassword = (body) => {
 const checkForgotCode = (body) => {
   return new Promise((resolve, reject) => {
     const { code, email } = body;
-    const getEmailQuery = "SELECT id FROM users WHERE email = ?";
+    const getEmailQuery = "SELECT email FROM users WHERE email = ?";
     db.query(getEmailQuery, email, (err, result) => {
       if (err) return reject(err);
-      const id = result[0].id;
+      const email = result[0].email;
       const checkCodeQuery =
-        "SELECT code FROM forgot_password WHERE id = (SELECT max(id) FROM forgot_password) AND user_id = ? AND code = ?";
-      db.query(checkCodeQuery, [id, code], (err, res) => {
+        "SELECT code FROM forgot_password WHERE email = ? AND code = ?";
+      db.query(checkCodeQuery, [email, code], (err, res) => {
         if (err) return reject(err);
         if (!res.length) return reject(404);
         return resolve("Code is valid");
@@ -146,13 +147,13 @@ const checkForgotCode = (body) => {
 const changePassword = (body) => {
   return new Promise((resolve, reject) => {
     const { code, email, password } = body;
-    const getEmailQuery = "SELECT id FROM users WHERE email = ?";
+    const getEmailQuery = "SELECT email FROM users WHERE email = ?";
     db.query(getEmailQuery, email, (err, result) => {
       if (err) return reject(err);
       const id = result[0].id;
       const checkCodeQuery =
-        "SELECT code FROM forgot_password WHERE id = (SELECT max(id) FROM forgot_password) AND user_id = ? AND code = ?";
-      db.query(checkCodeQuery, [id, code], (err, res) => {
+        "SELECT code FROM forgot_password WHERE email = ? AND code = ?";
+      db.query(checkCodeQuery, [email, code], (err, res) => {
         if (err) return reject(err);
         if (!res.length) return reject(404);
         const updatePassQuery = "UPDATE users SET ? WHERE email = ?";
