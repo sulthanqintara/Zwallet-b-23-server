@@ -53,13 +53,13 @@ const login = (body) => {
         if (!resultCompare) return reject(401);
         const userInfo = {
           userId: resultBody[0].id,
-          authLevel: Number(resultBody[0].role_id),
-          username: resultBody[0].username,
-          firstName: resultBody[0].first_name,
-          lastName: resultBody[0].last_name,
+          userUsername: resultBody[0].username,
+          userFirstName: resultBody[0].first_name,
+          userLastName: resultBody[0].last_name,
           userPhone: resultBody[0].phone,
-          profilePic: resultBody[0].picture,
+          userImage: resultBody[0].picture,
           balance: resultBody[0].balance,
+          userAuthLevel: Number(resultBody[0].role_id),
         };
         const payload = {
           firstName: resultBody[0].first_name,

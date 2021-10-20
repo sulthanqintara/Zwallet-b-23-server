@@ -131,7 +131,7 @@ const forgotPassword = (body) => {
         const mailOptions = {
           from: process.env.EMAIL_SENDER,
           to: email,
-          subject: "Test Email Subject",
+          subject: "Code Reset Password",
           text: `this code for reset your password ${code}`,
         };
         // send email
