@@ -150,7 +150,7 @@ const changePassword = (body) => {
     const getEmailQuery = "SELECT email FROM users WHERE email = ?";
     db.query(getEmailQuery, email, (err, result) => {
       if (err) return reject(err);
-      const id = result[0].id;
+      const email = result[0].email;
       const checkCodeQuery =
         "SELECT code FROM forgot_password WHERE email = ? AND code = ?";
       db.query(checkCodeQuery, [email, code], (err, res) => {
