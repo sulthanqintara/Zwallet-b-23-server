@@ -64,7 +64,7 @@ const updatePIN = (body, id) => {
     db.query(getPassQuery, id, (err, res) => {
       if (err) return reject(err);
       bcrypt.compare(oldPinNumber, res[0].pin_number, (err, result) => {
-        if (err) return reject(err);
+        if (err) return reject("bcrypt PIN error");
         if (!result) return reject(404);
         bcrypt.hash(newPinNumber, 10, (err, hash) => {
           if (err) return reject(err);
@@ -89,10 +89,10 @@ const updatePassword = (body, id) => {
     db.query(getPassQuery, id, (err, res) => {
       if (err) return reject(err);
       bcrypt.compare(oldPass, res[0].password, (err, result) => {
-        if (err) return reject(err);
+        if (err) return reject("Bcrypt compare password error");
         if (!result) return reject(404);
         bcrypt.hash(newPass, 10, (err, hash) => {
-          if (err) return reject(err);
+          if (err) return reject("Bcrypt hash password error");
           const newPassword = {
             password: hash,
           };
@@ -112,7 +112,6 @@ const forgotPassword = (body) => {
     const { email } = body;
     const getEmailQuery = "SELECT email FROM users WHERE email = ?";
     db.query(getEmailQuery, email, (err, result) => {
-      console.log(result);
       if (err) return reject(err);
       if (!result.length) return reject(404);
       const min = Math.ceil(111111);
@@ -177,11 +176,11 @@ const changePassword = (body) => {
         if (!res.length) return reject(404);
         const updatePassQuery = "UPDATE users SET ? WHERE email = ?";
         bcrypt.hash(password, 10, (err, hash) => {
-          if (err) return reject(err);
+          if (err) return reject("Bcrypt hash password error");
           const newPassword = {
             password: hash,
           };
-          db.query(updatePassQuery, [newPassword, email], (err, result) => {
+          db.query(updatePassQuery, [newPassword, email], (err) => {
             if (err) return reject(err);
             return resolve("Password sudah diganti");
           });
@@ -200,11 +199,11 @@ const getUser = (query) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 5;
     const offset = limit * (page - 1);
-    const queryString = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE NOT id = ${id} AND (username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%") ORDER BY ${orderBy} ${sort}, phone ${sort} LIMIT ${limit} OFFSET ${offset}`;
+    const queryString = `SELECT id AS userId, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE NOT id = ${id} AND (username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%") ORDER BY ${orderBy} ${sort} LIMIT ${limit} OFFSET ${offset}`;
     db.query(queryString, (err, result) => {
       if (err) return reject(err);
       if (!result.length) return reject(404);
-      const queryCountTotal = `SELECT COUNT(id) AS totalUser, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE NOT id = ${id} AND (username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%") ORDER BY ${orderBy} ${sort}, phone ${sort}`;
+      const queryCountTotal = `SELECT COUNT(id) AS totalUser, username AS userUsername, picture AS userImage, email AS userEmail, first_name AS userFirstName, last_name AS userLastName, phone AS userPhone, pin_number AS userPIN, role_id AS userAuthLevel FROM users WHERE NOT id = ${id} AND (username LIKE "%${keyword}%" OR phone LIKE "%${keyword}%") ORDER BY ${orderBy} ${sort}`;
       db.query(queryCountTotal, (err, totalResult) => {
         if (err) return reject(err);
         const totalData = totalResult[0].totalUser;
@@ -246,7 +245,7 @@ const verifyPin = (body) => {
     db.query(queryGetPin, userId, (err, res) => {
       if (err) return reject(err);
       bcrypt.compare(pin, res[0].pin_number, (err, compareResult) => {
-        if (err) return reject(err);
+        if (err) return reject("Bcrypt compare PIN error");
         if (!compareResult) return reject(404);
         console.log("result", compareResult);
         return resolve("success");

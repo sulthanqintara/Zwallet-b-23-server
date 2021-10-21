@@ -15,13 +15,13 @@ const register = (body) => {
         if (resultGetUsername.length) return reject("usernameHandler");
         bcrypt.genSalt(10, (err, resultSalt) => {
           // console.log("salt", resultSalt);
-          if (err) return reject(err);
+          if (err) return reject("genSalt error");
           bcrypt.hash(password, resultSalt, (err, resultHashPassword) => {
             // console.log("pw", resultHashPassword);
-            if (err) return reject(err);
+            if (err) return reject("Hash password error");
             bcrypt.hash(pin_number, resultSalt, (err, resultHashPin) => {
               // console.log("pin", resultHashPin);
-              if (err) return reject(err);
+              if (err) return reject("Hash PIN error");
               const userData = {
                 ...body,
                 password: resultHashPassword,
@@ -45,11 +45,10 @@ const login = (body) => {
     const { userLogin, password } = body;
     const getQuery = `SELECT * FROM users WHERE email = ? OR username = ?`;
     db.query(getQuery, [userLogin, userLogin], (err, resultBody) => {
-      // console.log(resultBody);
       if (err) return reject(err);
       if (!resultBody.length) return reject(401);
       bcrypt.compare(password, resultBody[0].password, (err, resultCompare) => {
-        if (err) return reject(err);
+        if (err) return reject("Compare password error");
         if (!resultCompare) return reject(401);
         const userInfo = {
           userId: resultBody[0].id,
@@ -76,7 +75,7 @@ const login = (body) => {
             issuer: "zwallet",
           },
           (err, token) => {
-            if (err) return reject(err);
+            if (err) return reject("JWT error");
             const postToken = `INSERT INTO active_token (token) VALUES ("${token}")`;
             db.query(postToken, (err) => {
               if (err) return reject(err);
