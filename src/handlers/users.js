@@ -121,10 +121,10 @@ const verifyPin = (req, res) => {
   const { body } = req;
   userModel
     .verifyPin(body)
-    .then((res) => responseHelper.success(res, "Pin Verified", 200))
+    .then((result) => responseHelper.success(res, "Success Pin Verified", 200, result))
     .catch((err) => {
       if (err === 404) {
-        return responseHelper.error(res, "Pin Invalid!", 404);
+        return responseHelper.error(res, "Pin Invalid!", 404, err);
       }
       return responseHelper.error(res, "Error", 500, err);
     });

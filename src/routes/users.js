@@ -4,7 +4,7 @@ const authMiddleware = require("../middlewares/auth");
 const uploadMiddleware = require("../middlewares/upload");
 
 /* http://localhost:8000/users */
-userRouter.get("/", userHandler.getUser);
+userRouter.get("/", authMiddleware.checkToken, userHandler.getUser);
 userRouter.post(
   "/verify-pin",
   authMiddleware.checkToken,
