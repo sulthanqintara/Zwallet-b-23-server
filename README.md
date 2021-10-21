@@ -3,6 +3,11 @@
 Zwallet is a mobile application that is useful as an online wallet to help users save money online and can facilitate transactions with other users easily.
 
 <br>
+<p align="center">
+  <img src="public/images/logo.png" />
+</p>
+
+<br>
 
 ### **BUILT WITH**
 

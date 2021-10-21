@@ -23,7 +23,7 @@ const register = (req, res) => {
           409,
           "Indicates that the request could not be processed because of conflict in the current state of the resource"
         );
-      else return responseHelper.error(res, "SQL Error", 500, err);
+      else return responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -40,7 +40,7 @@ const login = (req, res) => {
           401,
           "check your valid data"
         );
-      else responseHelper.error(res, "SQL Error", 500, err);
+      else responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -50,7 +50,7 @@ const logout = (req, res) => {
     .then((result) =>
       responseHelper.success(res, "Success Logout", 200, result)
     )
-    .catch((err) => responseHelper.error(res, "SQL Error", 500, err));
+    .catch((err) => responseHelper.error(res, "Error", 500, err));
 };
 
 module.exports = {

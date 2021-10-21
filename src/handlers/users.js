@@ -8,7 +8,7 @@ const getUserById = (req, res) => {
     .then((result) =>
       responseHelper.success(res, "Get data success", 200, result)
     )
-    .catch((err) => responseHelper.error(res, "Error SQL", 500, err));
+    .catch((err) => responseHelper.error(res, "Error", 500, err));
 };
 
 const editUser = (req, res) => {
@@ -18,7 +18,7 @@ const editUser = (req, res) => {
     .then((result) =>
       responseHelper.success(res, "Update user success", 200, result)
     )
-    .catch((err) => responseHelper.error(res, "Error SQL", 500, err));
+    .catch((err) => responseHelper.error(res, "Error", 500, err));
 };
 
 const updatePIN = (req, res) => {
@@ -31,7 +31,7 @@ const updatePIN = (req, res) => {
     .catch((err) => {
       if (err === 404)
         responseHelper.error(res, "Not Found!", 404, "Old PIN Wrong");
-      else responseHelper.error(res, "Error SQL", 500, err);
+      else responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -45,7 +45,7 @@ const updatePassword = (req, res) => {
     .catch((err) => {
       if (err === 404)
         responseHelper.error(res, "Not Found!", 404, "Old Password Wrong");
-      else responseHelper.error(res, "Error SQL", 500, err);
+      else responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -63,7 +63,7 @@ const forgotPassword = (req, res) => {
           "E-mail not registered"
         );
       }
-      return responseHelper.error(res, "Error SQL", 500, err);
+      return responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -74,9 +74,9 @@ const checkForgotPassword = (req, res) => {
     .then((result) => responseHelper.success(res, "Success", 200, result))
     .catch((err) => {
       if (err === 404) {
-        return responseHelper.error(res, 404, "Code is invalid");
+        return responseHelper.error(res, "err", 404, "Code is invalid");
       }
-      return responseHelper.error(res, "Error SQL", 500, err);
+      return responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -88,7 +88,7 @@ const changePassword = (req, res) => {
       responseHelper.success(res, "Password Has Been Changed!", 200, result)
     )
     .catch((err) => {
-      responseHelper.error(res, "Error SQL", 500, err);
+      responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -113,7 +113,7 @@ const getUser = (req, res) => {
     .catch((err) => {
       if (err === 404)
         responseHelper.error(res, "Not Found!", 404, "Please Input Valid Data");
-      else responseHelper.error(res, "Error SQL", 500, err);
+      else responseHelper.error(res, "Error", 500, err);
     });
 };
 
@@ -121,12 +121,12 @@ const verifyPin = (req, res) => {
   const { body } = req;
   userModel
     .verifyPin(body)
-    .then((result) => responseHelper.success(res, "Pin Verified", 200))
+    .then((res) => responseHelper.success(res, "Pin Verified", 200))
     .catch((err) => {
       if (err === 404) {
         return responseHelper.error(res, "Pin Invalid!", 404);
       }
-      return responseHelper.error(res, "Error SQL", 500, err);
+      return responseHelper.error(res, "Error", 500, err);
     });
 };
 
