@@ -99,4 +99,44 @@ const logout = (req) => {
   });
 };
 
-module.exports = { login, register, logout };
+const checkToken = (req) => {
+  return new Promise((resolve, reject) => {
+    const bearerToken = req.header("x-access-token");
+    if (!bearerToken) return reject("Anda belum login!");
+    const token = bearerToken.split(" ")[1];
+    jwt.verify(token, process.env.SECRET_KEY, (err) => {
+      if (err) {
+        const queryDelete = `DELETE FROM active_token WHERE token = ?`;
+        db.query(queryDelete, token, (err) => {
+          if (err) return reject(err);
+          else return reject("Token Expired, Silahkan Login Kembali");
+        });
+      } else {
+        const query = `SELECT token FROM active_token WHERE token = ?`;
+        db.query(query, token, (err, result) => {
+          if (err) return reject(err);
+          if (!result.length) return reject("Silahkan Login Kembali");
+          return resolve("Token valid");
+        });
+      }
+    });
+  });
+};
+
+const checkRegister = (body) => {
+  return new Promise((resolve, reject) => {
+    const { email, username} = body;
+    const getEmail = "SELECT email FROM users WHERE email = ?";
+    db.query(getEmail, email, (err, resultGetEmail) => {
+      if (err) return reject(err);
+      if (resultGetEmail.length) return reject("emailHandler");
+      const getUsername = "SELECT username FROM users WHERE username = ?";
+      db.query(getUsername, username, (err, resultGetUsername) => {
+        if (err) return reject(err);
+        if (resultGetUsername.length) return reject("usernameHandler");
+        return resolve("Success")
+      });
+    });
+  });
+};
+module.exports = { login, register, logout, checkToken, checkRegister };
