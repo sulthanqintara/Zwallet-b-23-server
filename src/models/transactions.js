@@ -83,15 +83,15 @@ const getAllTransactionsByUser = (query) => {
   return new Promise((resolve, reject) => {
     let user_id = query?.user_id && query.user_id;
     let order_by = query?.order_by ? query.order_by : "t.timestamp";
-    const dateNow = new Date();
+    const dateNow = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
     const startDuration = query?.start_duration
       ? query.start_duration
       : "0000-00-00";
     const finishDuration = query?.finish_duration
       ? query.finish_duration
-      : `${dateNow.getFullYear()}-${dateNow.getMonth() + 1}-${
-          dateNow.getDate() + 1
-        }`;
+      : `${dateNow.getFullYear()}-${
+          dateNow.getMonth() + 1
+        }-${dateNow.getDate()}`;
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 4;
     const offset = limit * (page - 1);
