@@ -10,9 +10,7 @@ const { Server } = require("socket.io");
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ["https://localhost:3000"],
-    methods: ["GET", "POST"],
-    credentials: true,
+    origin: "*",
   },
 });
 const port = process.env.SECRET_PORT;
